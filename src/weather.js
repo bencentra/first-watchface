@@ -20,7 +20,7 @@ function locationSuccess(pos) {
     var json, temperature, conditions;
     // Format data
     json = JSON.parse(response);
-    temperature = Math.round(json.main.temp - 273.15); // Convert from Kelvin
+    temperature = Math.round((json.main.temp - 273.15) * (1.8) + 32); // Convert from Kelvin
     console.log('Temperature is ' + temperature);
     conditions = json.weather[0].main;
     console.log('Conditions are ' + conditions);
