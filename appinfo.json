@@ -7,7 +7,24 @@
     "longName": "first-watchface",
     "projectType": "native",
     "resources": {
-        "media": []
+        "media": [
+            {
+                "file": "fonts/LECO_1976-Regular.ttf",
+                "name": "FONT_KEY_LECO_BOLD_LETTERS_42",
+                "targetPlatforms": [
+                    "basalt"
+                ],
+                "type": "font"
+            },
+            {
+                "file": "fonts/LECO_1976-Regular.ttf",
+                "name": "FONT_KEY_LECO_BOLD_LETTERS_18",
+                "targetPlatforms": [
+                    "basalt"
+                ],
+                "type": "font"
+            }
+        ]
     },
     "sdkVersion": "3",
     "shortName": "first-watchface",
