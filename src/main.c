@@ -8,9 +8,15 @@
 #define KEY_TEMPERATURE 0
 #define KEY_CONDITIONS 1
   
+typedef struct {
+  char *name;
+  GColor outer;
+  GColor inner;
+} ColorScheme;
+  
 static Window *s_main_window;
 static TextLayer *s_time_layer, *s_date_layer, *s_weather_layer;
-static Layer *s_circle_layer;
+static Layer *s_circle_layer, *s_rect_layer;
 static GFont *s_font_leco_lg, *s_font_leco_sm;
 
 /*
@@ -60,23 +66,35 @@ static void draw_circles(Layer *layer, GContext *ctx) {
   const int16_t half_h = bounds.size.h / 2;
   
   // Draw the outer circle
-  graphics_context_set_fill_color(ctx, GColorWindsorTan);
+  graphics_context_set_fill_color(ctx, GColorBlack);
   graphics_fill_circle(ctx, GPoint(half_w, half_h), half_w - 4);
   
   // Draw the inner circle
-  graphics_context_set_fill_color(ctx, GColorRajah);
-  graphics_fill_circle(ctx, GPoint(half_w, half_h), half_w - 8);
+  graphics_context_set_fill_color(ctx, GColorPastelYellow);
+  graphics_fill_circle(ctx, GPoint(half_w, half_h), half_w - 6);
+}
+
+static void draw_rectangles(Layer *layer, GContext *ctx) {
+  int stroke = 4;
+  
+  // Draw the outer rectangle
+  graphics_context_set_fill_color(ctx, GColorBlack);
+  graphics_fill_rect(ctx, GRect(0, 60, 144, 51), 0, GCornerNone);
+  
+  // Draw the inner rectangle
+  graphics_context_set_fill_color(ctx, GColorWhite);
+  graphics_fill_rect(ctx, GRect(0, 60 + stroke, 144, 51 - (stroke * 2)), 0, GCornerNone);
 }
 
 static void main_window_load(Window *window) {
   Layer *window_layer = window_get_root_layer(window);
   GRect bounds = layer_get_bounds(window_layer);
   
-  window_set_background_color(window, GColorPastelYellow);
+  window_set_background_color(window, GColorKellyGreen);
   
   // Create fonts
   s_font_leco_lg = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_KEY_LECO_BOLD_LETTERS_42));
-  s_font_leco_sm = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_KEY_LECO_BOLD_LETTERS_18));
+  s_font_leco_sm = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_KEY_LECO_BOLD_LETTERS_16));
   
   // Draw the circles
   s_circle_layer = layer_create(bounds);
@@ -84,21 +102,26 @@ static void main_window_load(Window *window) {
   layer_add_child(window_layer, s_circle_layer);
   
   // Create the date layer
-  s_date_layer = text_layer_create(GRect(0, 42, 144, 168));
+  s_date_layer = text_layer_create(GRect(0, 37, 144, 168));
   text_layer_set_background_color(s_date_layer, GColorClear);
   text_layer_set_text_color(s_date_layer, GColorBlack);
   text_layer_set_font(s_date_layer, s_font_leco_sm);
   text_layer_set_text_alignment(s_date_layer, GTextAlignmentCenter);
   layer_add_child(window_layer, text_layer_get_layer(s_date_layer));
   
-  // Create the weather TextLayer
-  s_weather_layer = text_layer_create(GRect(0, 106, 144, 168));
+  // Create the weather layer
+  s_weather_layer = text_layer_create(GRect(0, 113, 144, 168));
   text_layer_set_background_color(s_weather_layer, GColorClear);
   text_layer_set_text_color(s_weather_layer, GColorBlack);
   text_layer_set_text_alignment(s_weather_layer, GTextAlignmentCenter);
   text_layer_set_text(s_weather_layer, "Loading");
   text_layer_set_font(s_weather_layer, s_font_leco_sm);
   layer_add_child(window_get_root_layer(window), text_layer_get_layer(s_weather_layer));
+  
+  // Draw the rectangle
+  s_rect_layer = layer_create(bounds);
+  layer_set_update_proc(s_rect_layer, draw_rectangles);
+  layer_add_child(window_layer, s_rect_layer);
   
   // Create the time layer
   s_time_layer = text_layer_create(GRect(0, 58, 144, 168));
@@ -114,6 +137,8 @@ static void main_window_unload(Window *window) {
   text_layer_destroy(s_time_layer);
   text_layer_destroy(s_date_layer);
   text_layer_destroy(s_weather_layer);
+  layer_destroy(s_circle_layer);
+  layer_destroy(s_rect_layer);
   fonts_unload_custom_font(s_font_leco_lg);
   fonts_unload_custom_font(s_font_leco_sm);
 }

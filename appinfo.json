@@ -13,7 +13,7 @@
         "media": [
             {
                 "file": "fonts/LECO_1976-Regular.ttf",
-                "name": "FONT_KEY_LECO_BOLD_LETTERS_42",
+                "name": "FONT_KEY_LECO_BOLD_LETTERS_16",
                 "targetPlatforms": [
                     "basalt"
                 ],
@@ -21,7 +21,7 @@
             },
             {
                 "file": "fonts/LECO_1976-Regular.ttf",
-                "name": "FONT_KEY_LECO_BOLD_LETTERS_18",
+                "name": "FONT_KEY_LECO_BOLD_LETTERS_42",
                 "targetPlatforms": [
                     "basalt"
                 ],
