@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>First Watchface Configuration</title>
+  <link rel="stylesheet" type="text/css" href="/bower_components/Slate/dist/css/slate.min.css">
+  <link rel="stylesheet" type="text/css" href="/css/style.css">
+</head>
+<body>
+  <h1 class="title">Customization</h1>
+
+  <div class="item-container">
+    <div class="item-container-content">
+      <div class="item">
+        Customize your watch face!
+      </div>
+    </div>
+  </div>
+
+  <div class="item-container">
+    <div class="item-container-header">Options</div>
+    <div class="item-container-content">
+      <label class="item">
+        Outer Color
+        <input id="outerColorPicker" type="text" class="item-color item-color-sunny" value="#000000">
+      </label>
+      <label class="item">
+        Inner Color
+        <input id="innerColorPicker" type="text" class="item-color item-color-sunny" value="#FFFFFF">
+      </label>
+      <label class="item">
+        24-Hour Format
+        <input id="timeFormatCheckbox" type="checkbox" class="item-checkbox" checked>
+      </label>
+    </div>
+    <div class="item-container-footer">
+      Settings will update on the watch after you click "SAVE"
+    </div>
+  </div>
+
+  <div class="item-container">
+    <div class="button-container">
+      <input id="submitButton" type="button" class="item-button" value="SAVE">
+    </div>
+  </div>
+
+  <script src="/bower_components/Slate/dist/js/slate.min.js"></script>
+  <script src="/js/main.js"></script>
+</body>
+</html>
