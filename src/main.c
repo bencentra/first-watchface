@@ -10,6 +10,7 @@
   
 static Window *s_main_window;
 static TextLayer *s_time_layer, *s_date_layer, *s_weather_layer;
+static Layer *s_circle_layer;
 static GFont *s_font_leco_lg, *s_font_leco_sm;
 
 /*
@@ -53,15 +54,37 @@ static void update_date() {
   text_layer_set_text(s_date_layer, s_date_buffer);
 }
 
+static void draw_circles(Layer *layer, GContext *ctx) {
+  GRect bounds = layer_get_bounds(layer);
+  const int16_t half_w = bounds.size.w / 2;
+  const int16_t half_h = bounds.size.h / 2;
+  
+  // Draw the outer circle
+  graphics_context_set_fill_color(ctx, GColorWindsorTan);
+  graphics_fill_circle(ctx, GPoint(half_w, half_h), half_w - 4);
+  
+  // Draw the inner circle
+  graphics_context_set_fill_color(ctx, GColorRajah);
+  graphics_fill_circle(ctx, GPoint(half_w, half_h), half_w - 8);
+}
+
 static void main_window_load(Window *window) {
   Layer *window_layer = window_get_root_layer(window);
+  GRect bounds = layer_get_bounds(window_layer);
+  
+  window_set_background_color(window, GColorPastelYellow);
   
   // Create fonts
   s_font_leco_lg = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_KEY_LECO_BOLD_LETTERS_42));
   s_font_leco_sm = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_KEY_LECO_BOLD_LETTERS_18));
   
+  // Draw the circles
+  s_circle_layer = layer_create(bounds);
+  layer_set_update_proc(s_circle_layer, draw_circles);
+  layer_add_child(window_layer, s_circle_layer);
+  
   // Create the date layer
-  s_date_layer = text_layer_create(GRect(0, 36, 144, 168));
+  s_date_layer = text_layer_create(GRect(0, 42, 144, 168));
   text_layer_set_background_color(s_date_layer, GColorClear);
   text_layer_set_text_color(s_date_layer, GColorBlack);
   text_layer_set_font(s_date_layer, s_font_leco_sm);
@@ -69,7 +92,7 @@ static void main_window_load(Window *window) {
   layer_add_child(window_layer, text_layer_get_layer(s_date_layer));
   
   // Create the weather TextLayer
-  s_weather_layer = text_layer_create(GRect(0, 104, 144, 168));
+  s_weather_layer = text_layer_create(GRect(0, 106, 144, 168));
   text_layer_set_background_color(s_weather_layer, GColorClear);
   text_layer_set_text_color(s_weather_layer, GColorBlack);
   text_layer_set_text_alignment(s_weather_layer, GTextAlignmentCenter);
@@ -78,7 +101,7 @@ static void main_window_load(Window *window) {
   layer_add_child(window_get_root_layer(window), text_layer_get_layer(s_weather_layer));
   
   // Create the time layer
-  s_time_layer = text_layer_create(GRect(0, 54, 144, 168));
+  s_time_layer = text_layer_create(GRect(0, 58, 144, 168));
   text_layer_set_background_color(s_time_layer, GColorClear);
   text_layer_set_text_color(s_time_layer, GColorBlack);
   text_layer_set_font(s_time_layer, s_font_leco_lg);
@@ -139,7 +162,7 @@ static void inbox_received_callback(DictionaryIterator *iterator, void *context)
   }
   
   // Assemble the full string and display
-  snprintf(s_weather_buffer, sizeof(s_weather_buffer), "%s, %s", s_temp_buffer, s_cond_buffer);
+  snprintf(s_weather_buffer, sizeof(s_weather_buffer), "%s %s", s_temp_buffer, s_cond_buffer);
   text_layer_set_text(s_weather_layer, s_weather_buffer);
 }
 
