@@ -1,3 +1,4 @@
+// AJAX request helper method
 var xhrRequest = function(url, type, callback) {
   var xhr = new XMLHttpRequest();
   xhr.onload = function() {
@@ -56,12 +57,36 @@ function getWeather() {
   );
 }
 
-// Listen for when the watchface is opened
-Pebble.addEventListener('ready', function(e) {
+Pebble.addEventListener('ready', function() {
   console.log('PebbleKit JS ready!');
-  
   // Get the initial weather
   getWeather();
+});
+
+Pebble.addEventListener('showConfiguration', function() {
+  var url = 'http://localhost:8080';
+
+  console.log('Showing configuration page: ' + url);
+
+  Pebble.openURL(url);
+});
+
+Pebble.addEventListener('webviewclosed', function(e) {
+  var configData = JSON.parse(decodeURIComponent(e.response));
+
+  console.log('Configuration page returned: ' + JSON.stringify(configData));
+
+  if (configData.outerColor) {
+  	Pebble.sendAppMessage({
+  		'KEY_OUTER_COLOR': parseInt(configData.outerColor, 16),
+  		'KEY_INNER_COLOR': parseInt(configData.innerColor, 16),
+  		'KEY_TIME_FORMAT': configData.twentyFourHourFormat
+  	}, function() {
+  		console.log('Config data send successful');
+  	}, function() {
+  		console.log('Config data send failed!');
+  	});
+  }
 });
 
 // Listen for when an AppMessage is received

@@ -7,17 +7,17 @@
   
 #define KEY_TEMPERATURE 0
 #define KEY_CONDITIONS 1
-  
-typedef struct {
-  char *name;
-  GColor outer;
-  GColor inner;
-} ColorScheme;
+#define KEY_OUTER_COLOR 2
+#define KEY_INNER_COLOR 3
+#define KEY_TIME_FORMAT 4
   
 static Window *s_main_window;
 static TextLayer *s_time_layer, *s_date_layer, *s_weather_layer;
 static Layer *s_circle_layer, *s_rect_layer;
 static GFont *s_font_leco_lg, *s_font_leco_sm;
+static bool twenty_four_hour_format = false;
+static int outer, inner;
+static GColor outer_color, inner_color, inner_text_color;
 
 /*
 *  Watchface
@@ -31,7 +31,7 @@ static void update_time() {
   static char s_time_buffer[] = "00:00";
 
   // Set the time
-  if(clock_is_24h_style() == true) {
+  if (clock_is_24h_style() == twenty_four_hour_format) {
     strftime(s_time_buffer, sizeof(s_time_buffer), "%H:%M", tick_time);
   } 
   else {
@@ -70,7 +70,7 @@ static void draw_circles(Layer *layer, GContext *ctx) {
   graphics_fill_circle(ctx, GPoint(half_w, half_h), half_w - 4);
   
   // Draw the inner circle
-  graphics_context_set_fill_color(ctx, GColorPastelYellow);
+  graphics_context_set_fill_color(ctx, inner_color);
   graphics_fill_circle(ctx, GPoint(half_w, half_h), half_w - 6);
 }
 
@@ -90,16 +90,35 @@ static void main_window_load(Window *window) {
   Layer *window_layer = window_get_root_layer(window);
   GRect bounds = layer_get_bounds(window_layer);
   
-  window_set_background_color(window, GColorKellyGreen);
-  
   // Create fonts
   s_font_leco_lg = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_KEY_LECO_BOLD_LETTERS_42));
   s_font_leco_sm = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_KEY_LECO_BOLD_LETTERS_16));
+
+  // Check for persisted settings
+  if (persist_read_int(KEY_OUTER_COLOR)) {
+    outer = persist_read_int(KEY_OUTER_COLOR);
+    outer_color = GColorFromHEX(outer);
+  }
+  else {
+    outer_color = GColorBlack;
+  }
+  if (persist_read_int(KEY_INNER_COLOR)) {
+    inner  = persist_read_int(KEY_INNER_COLOR);
+    inner_color = GColorFromHEX(inner);
+  }
+  else {
+    inner_color = GColorWhite;
+  }
+  if (persist_read_bool(KEY_TIME_FORMAT)) {
+    twenty_four_hour_format = persist_read_bool(KEY_TIME_FORMAT);
+  }
+
+  // Color the background
+  window_set_background_color(window, outer_color);
   
   // Draw the circles
   s_circle_layer = layer_create(bounds);
   layer_set_update_proc(s_circle_layer, draw_circles);
-  layer_add_child(window_layer, s_circle_layer);
   
   // Create the date layer
   s_date_layer = text_layer_create(GRect(0, 37, 144, 168));
@@ -107,7 +126,6 @@ static void main_window_load(Window *window) {
   text_layer_set_text_color(s_date_layer, GColorBlack);
   text_layer_set_font(s_date_layer, s_font_leco_sm);
   text_layer_set_text_alignment(s_date_layer, GTextAlignmentCenter);
-  layer_add_child(window_layer, text_layer_get_layer(s_date_layer));
   
   // Create the weather layer
   s_weather_layer = text_layer_create(GRect(0, 113, 144, 168));
@@ -116,12 +134,10 @@ static void main_window_load(Window *window) {
   text_layer_set_text_alignment(s_weather_layer, GTextAlignmentCenter);
   text_layer_set_text(s_weather_layer, "Loading");
   text_layer_set_font(s_weather_layer, s_font_leco_sm);
-  layer_add_child(window_get_root_layer(window), text_layer_get_layer(s_weather_layer));
   
   // Draw the rectangle
   s_rect_layer = layer_create(bounds);
   layer_set_update_proc(s_rect_layer, draw_rectangles);
-  layer_add_child(window_layer, s_rect_layer);
   
   // Create the time layer
   s_time_layer = text_layer_create(GRect(0, 58, 144, 168));
@@ -129,6 +145,12 @@ static void main_window_load(Window *window) {
   text_layer_set_text_color(s_time_layer, GColorBlack);
   text_layer_set_font(s_time_layer, s_font_leco_lg);
   text_layer_set_text_alignment(s_time_layer, GTextAlignmentCenter);
+
+  // Assemble the watchface
+  layer_add_child(window_layer, s_circle_layer);
+  layer_add_child(window_layer, text_layer_get_layer(s_date_layer));
+  layer_add_child(window_get_root_layer(window), text_layer_get_layer(s_weather_layer));
+  layer_add_child(window_layer, s_rect_layer);
   layer_add_child(window_layer, text_layer_get_layer(s_time_layer));
 }
 
@@ -176,6 +198,22 @@ static void inbox_received_callback(DictionaryIterator *iterator, void *context)
         break;
       case KEY_CONDITIONS:
         snprintf(s_cond_buffer, sizeof(s_cond_buffer), "%s", t->value->cstring);
+        break;
+      case KEY_OUTER_COLOR:
+        outer = t->value->int32;
+        persist_write_int(KEY_OUTER_COLOR, outer);
+        window_set_background_color(s_main_window, GColorFromHEX(outer));
+        break;
+      case KEY_INNER_COLOR: 
+        inner = t->value->int32;
+        persist_write_int(KEY_INNER_COLOR, inner);
+        inner_color = GColorFromHEX(inner);
+        layer_mark_dirty(window_get_root_layer(s_main_window));
+        break;
+      case KEY_TIME_FORMAT:
+        twenty_four_hour_format = t->value->int8;
+        persist_write_int(KEY_TIME_FORMAT, twenty_four_hour_format);
+        update_time();
         break;
       default:
         APP_LOG(APP_LOG_LEVEL_ERROR, "KEY %d not recognized!", (int)t->key);
