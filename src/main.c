@@ -1,4 +1,5 @@
 #include <pebble.h>
+#include <ctype.h>
 
 /*
 *  My first watch face for Pebble Time.
@@ -31,7 +32,7 @@ static void update_time() {
   static char s_time_buffer[] = "00:00";
 
   // Set the time
-  if (clock_is_24h_style() == twenty_four_hour_format) {
+  if (twenty_four_hour_format == true) {
     strftime(s_time_buffer, sizeof(s_time_buffer), "%H:%M", tick_time);
   } 
   else {
@@ -182,7 +183,7 @@ static void tick_handler(struct tm *tick_time, TimeUnits units_changed) {
 */
 
 static void inbox_received_callback(DictionaryIterator *iterator, void *context) {
-   // Store incoming information
+  // Store incoming information
   static char s_temp_buffer[8];
   static char s_cond_buffer[32];
   static char s_weather_buffer[32];
