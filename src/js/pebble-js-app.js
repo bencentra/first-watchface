@@ -64,7 +64,7 @@ Pebble.addEventListener('ready', function() {
 });
 
 Pebble.addEventListener('showConfiguration', function() {
-  var url = 'http://localhost:8080';
+  var url = 'http://bencentra.github.io/first-watchface/config/';
 
   console.log('Showing configuration page: ' + url);
 
